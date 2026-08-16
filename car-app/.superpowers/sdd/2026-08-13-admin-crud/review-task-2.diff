@@ -1,0 +1,149 @@
+# Review package: 4ba9bd9..26228a2
+
+## Commits
+26228a2 feat: add /api/admins create and update endpoints
+
+## Files changed
+ API/DTOs/UserDto.cs |  6 +++++-
+ API/Program.cs      | 41 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 46 insertions(+), 1 deletion(-)
+
+## Diff
+diff --git a/API/DTOs/UserDto.cs b/API/DTOs/UserDto.cs
+index 8c502d1..7b00334 100644
+--- a/API/DTOs/UserDto.cs
++++ b/API/DTOs/UserDto.cs
+@@ -1,7 +1,11 @@
+ namespace API.DTOs;
+ 
+ public record UserResponse(Guid Id, string Email, string Role, string Name, DateTime CreatedAt);
+ 
+ public record CreateUserRequest(string Email, string PasswordHash, string Role, string Name);
+ 
+-public record UpdateUserRequest(Guid Id, string Email, string Role, string Name);
+\ No newline at end of file
++public record UpdateUserRequest(Guid Id, string Email, string Role, string Name);
++
++public record CreateAdminRequest(string Email, string Password, string Name, string Role);
++
++public record UpdateAdminRequest(string Email, string Name, string Role, string? Password);
+\ No newline at end of file
+diff --git a/API/Program.cs b/API/Program.cs
+index c34ada7..f24925e 100644
+--- a/API/Program.cs
++++ b/API/Program.cs
+@@ -10,20 +10,21 @@ builder.Services.AddServiceDefaults();
+ builder.Services.AddDbContext<SorchaDbContext>(options =>
+     options.UseNpgsql(builder.Configuration.GetConnectionString("Database")));
+ builder.Services.AddCaching(builder.Configuration);
+ builder.Services.AddAuthorization();
+ builder.Services.AddJwtAuthentication(builder.Configuration["Jwt:Issuer"] ?? "", builder.Configuration["Jwt:Audience"] ?? "", builder.Configuration["Jwt:Secret"] ?? "");
+ builder.Services.AddScoped(typeof(ICachedRepository<>), typeof(CachedRepository<>));
+ builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
+ builder.Services.AddScoped<IRefreshTokenRepository, EfRefreshTokenRepository>();
+ builder.Services.AddScoped(typeof(IService<>), typeof(Service<>));
+ builder.Services.AddScoped<IAuthService, AuthService>();
++builder.Services.AddScoped<IAdminService, AdminService>();
+ builder.Services.AddScoped<ICarService, CarService>();
+ builder.Services.AddScoped<IProductService, ProductService>();
+ builder.Services.AddScoped<IOrderService, OrderService>();
+ builder.Services.AddOpenApi();
+ builder.Services.AddCors(options =>
+ {
+     options.AddPolicy("FrontEnd",
+         policy =>
+         {
+             policy.WithOrigins("http://localhost:3000")
+@@ -51,20 +52,21 @@ MapEntityEndpoints<CarModel>(app, "car-models");
+ MapEntityEndpoints<Category>(app, "categories");
+ MapCarEndpoints(app);
+ MapEntityEndpoints<ProductImage>(app, "product-images");
+ MapEntityEndpoints<Review>(app, "reviews");
+ MapEntityEndpoints<Order>(app, "orders");
+ MapEntityEndpoints<OrderItem>(app, "order-items");
+ MapEntityEndpoints<Favorite>(app, "favorites");
+ MapEntityEndpoints<CartItem>(app, "cart-items");
+ 
+ MapAuthEndpoints(app);
++MapAdminEndpoints(app);
+ MapCustomerActionEndpoints(app);
+ MapProductEndpoints(app);
+ MapOrderEndpoints(app);
+ 
+ app.Run();
+ 
+ static void MapEntityEndpoints<T>(WebApplication app, string routePrefix, string? queryRole = null, string commandRole = "Admin") where T : EntityBase
+ {
+     var group = queryRole != null ? app.MapGroup($"/api/{routePrefix}")
+         .RequireAuthorization(new AuthorizeAttribute { Roles = queryRole }) :
+@@ -151,20 +153,23 @@ static void MapAuthEndpoints(WebApplication app)
+         {
+             return Results.Unauthorized();
+         }
+     });
+ }
+ 
+ static AuthResponse ToAuthResponse(AuthResult result) =>
+     new(result.AccessToken, result.RefreshToken, result.AccessTokenExpiresAt,
+         new UserResponse(result.UserId, result.Email, result.Role, result.Name, result.CreatedAt));
+ 
++static UserResponse ToUserResponse(User user) =>
++    new(user.Id, user.Email, user.Role, user.Name, user.CreatedAt);
++
+ static void MapCarEndpoints(WebApplication app)
+ {
+     var group = app.MapGroup("/api/cars");
+     var admin = app.MapGroup("/api/cars")
+         .RequireAuthorization(new AuthorizeAttribute { Roles = "Admin" });
+ 
+     group.MapGet("/", async ([FromServices] ICarService carService,
+         CancellationToken cancel, int pageNumber = 1, int pageSize = 20,
+         string? search = null, string? sortBy = null, string? sortDir = null, string? includes = null,
+         decimal? minPrice = null, decimal? maxPrice = null,
+@@ -339,10 +344,46 @@ static void MapOrderEndpoints(WebApplication app)
+         {
+             var order = await orderService.CreateAsync(GetUserId(user), request, cancel);
+             return Results.Created($"/api/me/orders/{order.Id}", order);
+         }
+         catch (InsufficientStockException)
+         {
+             return Results.Conflict(new { error = "Insufficient stock for one or more items" });
+         }
+     }).WithName("CreateMyOrder");
+ }
++
++static void MapAdminEndpoints(WebApplication app)
++{
++    var admin = app.MapGroup("/api/admins")
++        .RequireAuthorization(new AuthorizeAttribute { Roles = "Admin" });
++
++    admin.MapPost("/", async ([FromServices] IAdminService adminService, CreateAdminRequest request, CancellationToken cancellationToken) =>
++    {
++        try
++        {
++            var user = await adminService.CreateAdminAsync(request.Email, request.Password, request.Name, request.Role, cancellationToken);
++            return Results.Json(ToUserResponse(user), statusCode: StatusCodes.Status201Created);
++        }
++        catch (EmailAlreadyExistsException)
++        {
++            return Results.Conflict(new { error = "Email already registered" });
++        }
++    }).WithName("Create_Admin");
++
++    admin.MapPut("/{id:guid}", async ([FromServices] IAdminService adminService, Guid id, UpdateAdminRequest request, CancellationToken cancellationToken) =>
++    {
++        try
++        {
++            var user = await adminService.UpdateAdminAsync(id, request.Email, request.Name, request.Role, request.Password, cancellationToken);
++            return Results.Ok(ToUserResponse(user));
++        }
++        catch (KeyNotFoundException)
++        {
++            return Results.NotFound();
++        }
++        catch (EmailAlreadyExistsException)
++        {
++            return Results.Conflict(new { error = "Email already registered" });
++        }
++    }).WithName("Update_Admin");
++}

@@ -1,0 +1,32 @@
+@keyframes morph {
+  0% {
+    border-radius: 58% 42% 30% 70% / 60% 30% 70% 40%;
+    transform: translateY(0);
+  }
+  50% {
+    border-radius: 30% 70% 55% 45% / 70% 35% 65% 30%;
+    transform: translateY(-8px);
+  }
+  100% {
+    border-radius: 58% 42% 30% 70% / 60% 30% 70% 40%;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sliding {
+  from {
+    transform: translateX(100px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes sliding {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

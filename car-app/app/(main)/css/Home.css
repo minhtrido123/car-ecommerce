@@ -1,0 +1,15 @@
+@keyframes gradientMove {
+  0% {
+    background: linear-gradient(180deg, #facc15, transparent);
+  }
+  50% {
+    background: linear-gradient(170deg, #facc15, transparent);
+  }
+  100% {
+    background: linear-gradient(180deg, #facc15, transparent);
+  }
+}
+
+.animate-gradient {
+  animation: gradientMove 5s ease-in-out infinite;
+}

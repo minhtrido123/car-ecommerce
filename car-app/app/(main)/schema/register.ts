@@ -1,0 +1,20 @@
+import { z } from "zod";
+
+export const registerSchema = z.object({
+  name: z
+    .string()
+    .min(1, "User Name is required"),
+
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Invalid email address"),
+
+  password: z
+    .string()
+    .min(1, "Password is required"),
+  rememberMe: z.boolean(),
+  // .min(8, "Password must be at least 8 characters"),
+});
+
+export type RegisterForm = z.infer<typeof registerSchema>;
