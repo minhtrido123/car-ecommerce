@@ -1,0 +1,11 @@
+<Solution>
+  <Project Path="API/API.csproj" />
+  <Project Path="Infrastructure/Infrastructure.csproj" />
+  <Project Path="Models/Models.csproj" />
+  <Project Path="Repositories/Repositories.csproj" />
+  <Project Path="Scraper/Scraper.csproj" />
+  <Project Path="Services/Services.csproj" />
+  <Project Path="Seed/Seed.csproj" />
+  <Project Path="Sorcha.ServiceDefaults/Sorcha.ServiceDefaults.csproj" />
+  <Project Path="Tests/Tests.csproj" />
+</Solution>

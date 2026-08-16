@@ -1,0 +1,12 @@
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.vscode/
+.idea/
+.superpowers/
+.worktrees/
+TestResults/
+**/appsettings.json
+**/appsettings.*.json
