@@ -6,6 +6,7 @@ import "../globals.css";
 import Link from "next/link";
 import SideNav from "./components/SideNav";
 import RequireAdmin from "./components/RequireAdmin";
+import { RoleGuard } from "./components/AdminRouteGuard";
 
 export const metadata: Metadata = {
   title: "Supra",
@@ -24,22 +25,24 @@ export default function AdminLayout({
       className={`h-full antialiased`}
     >
       <body>
-        <MetroProvider>
-          <GlobalSpinner />
-          <RequireAdmin>
-            <div className="min-h-screen flex">
-              <SideNav />
-              <div className="w-full p-5">
+        <RoleGuard roles={["admin"]}>
+          <MetroProvider>
+            <GlobalSpinner />
+            <RequireAdmin>
+              <div className="min-h-screen flex">
+                <SideNav />
+                <div className="w-full p-5">
 
-                {children}
+                  {children}
+
+                </div>
+
+
 
               </div>
-
-
-
-            </div>
-          </RequireAdmin>
-        </MetroProvider>
+            </RequireAdmin>
+          </MetroProvider>
+        </RoleGuard>
       </body>
     </html>
 

@@ -62,22 +62,29 @@
   --animate-blob: blob 8s linear infinite;
 }
 
-.wave {
-  position: absolute;
-  mask-repeat: repeat-x;
-  mask-size: 600px 100%;
-  mask-position: 0 0;
-}
+/* .wave { */
+/*   position: absolute; */
+/*   mask-repeat: repeat-x; */
+/*   mask-size: 600px 100%; */
+/*   mask-position: 0 0; */
+/* } */
 
 @keyframes wave {
-  to {
-    mask-position: -600px 0;
+  0% {
+    mask-position: 0% 0%;
+    -webkit-mask-position: 0% 0%;
   }
+
+  100% {
+    mask-position: -200% 0%;
+    -webkit-mask-position: -200% 0%;
+  }
+
 }
 
 body {
-  /* background: var(--background); */
-  /* color: var(--foreground); */
+  background: var(--background);
+  color: var(--foreground);
   font-family: Noto Sans, Arial, Helvetica, sans-serif;
   box-sizing: border-box;
 }
@@ -87,17 +94,15 @@ body {
 }
 
 .fresh-primary-action {
-  --fresh-primary-background: oklch(0.88 0.18 96);
-  --fresh-primary-foreground: oklch(0.145 0.01 148);
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   isolation: isolate;
-  border: 1px solid var(--fresh-primary-background);
-  background: var(--fresh-primary-background);
-  color: var(--fresh-primary-foreground);
+  border: 1px solid var(--background);
+  background: var(--background) !important;
+  color: var(--foreground) !important;
   font-family: var(--font-mono);
   font-size: var(--fresh-min-mono);
   font-variation-settings: "wght" 620;
@@ -122,8 +127,8 @@ body {
 .fresh-primary-action-content--hover {
   position: absolute;
   z-index: 2;
-  background: white;
-  color: black;
+  background: var(--secondary) !important;
+  color: var(--secondary-foreground) !important;
   clip-path: polygon(-1% 0%,-1% 0%,-100% 100%,-1% 100%);
   pointer-events: none;
   transition: clip-path .4s cubic-bezier(.25,0,0,1);
@@ -134,16 +139,16 @@ body {
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: white;
+  --foreground: black;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
+  --primary: white;
+  --primary-foreground: black;
+  --secondary: #233D4D;
+  --secondary-foreground: #EAECF0;
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
@@ -169,16 +174,16 @@ body {
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
+  --background: #000000;
+  --foreground: #FE7F2D;
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
+  --primary: #000000;
+  --primary-foreground: #FE7F2D;
+  --secondary: #233D4D;
+  --secondary-foreground: white !important;
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.269 0 0);
@@ -212,4 +217,13 @@ body {
   html {
     @apply font-sans;
   }
+}
+
+.app-bar{
+  background-color: var(--background);
+}
+
+.card {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
 }

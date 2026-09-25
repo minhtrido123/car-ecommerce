@@ -131,7 +131,7 @@ export default function AdminMenuPage() {
               >
                 {item.icon && <span className={`mif-${item.icon}`}></span>}
                 <span className="font-semibold">{item.label}</span>
-                <span className="text-muted text-sm">{item.url}</span>
+                <span className="text-sm">{item.url}</span>
                 {!item.isActive && (
                   <span className="bg-gray-200 text-gray-600 text-xs px-2 py-0.5 rounded">
                     inactive

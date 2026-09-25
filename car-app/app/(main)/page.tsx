@@ -1,40 +1,11 @@
 import Carousel from "./components/Carousel";
-import IconBox from "./components/IconBox";
-import MoreInfo from "./components/MoreInfo";
-import Navbar from "./components/Navbar";
 import "./css/Home.css"
 
 export default function Home() {
   return (
     <div className="px-0!">
       <Carousel />
-      <div className="relative w-full h-16 bg-[url('/xbox-green.jpg')] bg-cover bg-center">
-        <div
-          className="wave w-full h-16 z-[3] bg-[linear-gradient(to_left,#EF9801,#F8BC1A)] rotate-180 animate-[wave_15s_linear_infinite]"
-          style={{
-            maskImage: "url('/wave.svg')",
-            WebkitMaskImage: "url('/wave.svg')",
-          }}
-        >
-        </div>
-        <div
-          className="wave w-full opacity-[0.7] z-[2] top-[5px] h-16 bg-[linear-gradient(to_bottom,#EF9801,#F8BC1A)] rotate-180 animate-[wave_10s_linear_infinite] [animation-delay:-2s]"
-          style={{
-            maskImage: "url('/wave.svg')",
-            WebkitMaskImage: "url('/wave.svg')",
-          }}
-        >
-        </div>
-        <div
-          className="wave w-full opacity-[0.5] z-[1] top-[10px] h-16 bg-[linear-gradient(to_bottom,#EF9801,#F8BC1A)] rotate-180 animate-[wave_8s_linear_infinite] [animation-delay:-4s]"
-          style={{
-            maskImage: "url('/wave.svg')",
-            WebkitMaskImage: "url('/wave.svg')",
-          }}
-        >
-        </div>
-      </div>
-      <div className="bg-[url('/xbox-green.jpg')]! bg-center! bg-cover! bg-norepeat! text-white! py-10!" >
+      <div className="bg-[var(--secondary)]! bg-center! bg-cover! bg-norepeat! text-white! py-10!" >
         <h2 className="text-3xl font-semibold text-center">Our Sales</h2>
         <div className="flex! justify-center!">
           <div style={{ display: "grid" }} className="grid-cols-1! md:grid-cols-1! lg:grid-cols-3! gap-6! text-center! w-full! px-[5%]!">
@@ -69,38 +40,21 @@ export default function Home() {
 
       <div className="relative w-full h-16">
         <div
-          className="wave w-full h-16 z-[3] bg-[linear-gradient(to_bottom,#FFFFFF,#8BB400)] rotate-180 animate-[wave_15s_linear_infinite]"
+          className="wave w-full h-16 z-[3] bg-[var(--secondary)] rotate-180 animate-[wave_14s_linear_infinite]"
           style={{
             maskImage: "url('/wave.svg')",
             WebkitMaskImage: "url('/wave.svg')",
-          }}
-        >
-        </div>
-        <div
-          className="wave w-full opacity-[0.7] z-[2] top-[5px] h-16 bg-[linear-gradient(to_bottom,#FFFFFF,#8BB400,)] rotate-180 animate-[wave_10s_linear_infinite] [animation-delay:-2s]"
-          style={{
-            maskImage: "url('/wave.svg')",
-            WebkitMaskImage: "url('/wave.svg')",
-          }}
-        >
-        </div>
-        <div
-          className="wave w-full opacity-[0.5] z-[1] top-[10px] h-16 bg-[linear-gradient(to_bottom,#FFFFFF,#8BB400)] rotate-180 animate-[wave_8s_linear_infinite] [animation-delay:-4s]"
-          style={{
-            maskImage: "url('/wave.svg')",
-            WebkitMaskImage: "url('/wave.svg')",
+
+            maskSize: "200% 100%",
+            WebkitMaskSize: "200% 100%",
           }}
         >
         </div>
       </div>
-      {/* <div className="bg-gradient-to-b! from-lime-400! to-transparent! h-[50px]!"> */}
-      {/* </div> */}
       <div className="marquee-section py-10!">
         <h2 className="h1 text-center">Our Brands</h2>
         <div className="flex! justify-center!">
           <div style={{ display: "grid" }} className="grid-cols-2! lg:grid-cols-3! gap-12!">
-            {/* <div className="flex! justify-center! flex-wrap! gap-[2rem]! px-[26%]! 2xl:px-[27%]!"> */}
-
             <div className="flex! justify-center! items-center! w-[200px]! h-[100px]!">
               <img
                 src="/ford.png"
@@ -167,7 +121,7 @@ export default function Home() {
 
             <div className="flex! justify-center! items-center! w-[200px]! h-[100px]!">
               <img
-                src="/nissan.svg"
+                src="/nissan.png"
                 className="h-full! grayscale hover:grayscale-0 transition duration-300"
                 alt="Logo"
               />

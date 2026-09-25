@@ -4,77 +4,9 @@ import Link from "next/link";
 import api from "../lib/api";
 import Pagination from "../components/Pagination";
 import RangeFilter from "../components/RangeFilter";
-
-type CarImage = {
-  id: string;
-  productId: string;
-  url: string;
-  isPrimary: boolean;
-  createdAt: string;
-};
-
-type CarBrand = {
-  id: string;
-  name: string;
-  country: string | null;
-};
-
-type CarModel = {
-  id: string;
-  brandId: string;
-  name: string;
-  yearStart: number | null;
-  yearEnd: number | null;
-};
-
-type Car = {
-  id: string;
-  brandId: string | null;
-  modelId: string | null;
-  categoryId: string | null;
-  sellerId: string | null;
-  year: number;
-  price: number;
-  mileage: number | null;
-  color: string | null;
-  description: string | null;
-  status: string;
-  createdAt: string;
-  productImages: CarImage[];
-  brand: CarBrand | null;
-  model: CarModel | null;
-};
-
-type CarFiltersMeta = {
-  brands: { id: string; name: string }[];
-  colors: string[];
-  statuses: string[];
-  minPrice: number;
-  maxPrice: number;
-  minMileage: number;
-  maxMileage: number;
-  minYear: number;
-  maxYear: number;
-};
-
-type Filters = {
-  minPrice: number | null;
-  maxPrice: number | null;
-  minMileage: number | null;
-  maxMileage: number | null;
-  minYear: number | null;
-  maxYear: number | null;
-  color: string;
-  status: string;
-  brandIds: string[];
-};
-
-type PagedCars = {
-  items: Car[];
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-};
+import { Car, CarFiltersMeta, Filters, PagedCars } from "./types";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 const PAGE_SIZE = 20;
 const SORT_COLUMNS = ["price", "year", "mileage", "createdAt"] as const;
@@ -92,7 +24,6 @@ const DEFAULT_FILTERS: Filters = {
   brandIds: [],
 };
 
-
 export default function CarsPage() {
   const [cars, setCars] = useState<Car[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -106,6 +37,8 @@ export default function CarsPage() {
   const [pageNumber, setPageNumber] = useState(1);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [debouncedFilters, setDebouncedFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     api
@@ -147,7 +80,8 @@ export default function CarsPage() {
         sortDir: dir,
         includes: "ProductImages",
       });
-      if (q) params.set("search", q);
+      if (q)
+        params.set("search", q);
       if (f.minPrice != null) params.set("minPrice", String(f.minPrice));
       if (f.maxPrice != null) params.set("maxPrice", String(f.maxPrice));
       if (f.minMileage != null) params.set("minMileage", String(f.minMileage));
@@ -157,6 +91,12 @@ export default function CarsPage() {
       if (f.color) params.set("color", f.color);
       if (f.status) params.set("status", f.status);
       if (f.brandIds.length > 0) params.set("brandIds", f.brandIds.join(","));
+
+      const filteredParams = new URLSearchParams(
+        [...params.entries()].filter(([key]) => key !== "includes")
+      );
+
+      router.push(`/cars?${filteredParams.toString()}`);
 
       const { data } = await api.get(`/cars?${params.toString()}`, { showLoading: false });
       return {
@@ -217,8 +157,6 @@ export default function CarsPage() {
 
   return (
     <div className="px-5!">
-      <h1 className="h1 text-center my-6">Our Cars</h1>
-
       <p className="text-center h3 text-light">Sort by</p>
       <div className="d-flex flex-justify-center flex-wrap m-2">
         {SORT_COLUMNS.map((column) => (
@@ -352,15 +290,15 @@ export default function CarsPage() {
         </div>
       </div>
 
-      <ul className="unstyled-list row flex-justify-center mt-4">
+      <ul className="unstyled-list row mt-4">
         {cars.map((car) => {
           const imageUrl =
             car.productImages && car.productImages.length > 0
               ? car.productImages[0].url
               : "/ford.png";
           return (
-            <li key={car.id} className="cell-sm-6 cell-md-4 m-0 p-0">
-              <div className="card image-header m-0 p-0 w-full">
+            <li key={car.id} className="cell-sm-6 cell-md-3">
+              <Link href={`/cars/${car.id}`} className="card image-header m-0 p-0 w-full">
                 <div
                   className="card-header fg-white"
                   style={{
@@ -403,12 +341,7 @@ export default function CarsPage() {
                     </p>
                   )}
                 </div>
-                <div className="card-footer">
-                  <Link href={`/cars/${car.id}`} className="button secondary">
-                    View Details
-                  </Link>
-                </div>
-              </div>
+              </Link>
             </li>
           );
         })}

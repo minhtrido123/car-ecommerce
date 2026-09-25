@@ -12,9 +12,9 @@ public interface IOrderService
 public class OrderService : IOrderService
 {
     private readonly SorchaDbContext _db;
-    private readonly IKafkaProducer _kafkaProducer;
+    private readonly Lazy<IKafkaProducer> _kafkaProducer;
 
-    public OrderService(SorchaDbContext db, IKafkaProducer kafkaProducer)
+    public OrderService(SorchaDbContext db, Lazy<IKafkaProducer> kafkaProducer)
     {
         _db = db;
         _kafkaProducer = kafkaProducer;
@@ -56,12 +56,17 @@ public class OrderService : IOrderService
         _db.OrderItems.AddRange(items);
         await _db.SaveChangesAsync(cancellationToken);
 
-        foreach (var item in items)
+        if (_kafkaProducer.Value is null) return order;
+        try
         {
-            await _kafkaProducer.PublishInvalidationAsync("Product", item.ProductId, "updated", cancellationToken);
-            await _kafkaProducer.PublishInventoryAsync(item.ProductId, item.Quantity, "sold", cancellationToken);
+            foreach (var item in items)
+            {
+                await _kafkaProducer.Value.PublishInvalidationAsync("Product", item.ProductId, "updated", cancellationToken);
+                await _kafkaProducer.Value.PublishInventoryAsync(item.ProductId, item.Quantity, "sold", cancellationToken);
+            }
+            await _kafkaProducer.Value.PublishInvalidationAsync("Order", order.Id, "created", cancellationToken);
         }
-        await _kafkaProducer.PublishInvalidationAsync("Order", order.Id, "created", cancellationToken);
+        catch { }
 
         return order;
     }

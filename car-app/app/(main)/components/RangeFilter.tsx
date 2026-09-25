@@ -26,7 +26,7 @@ export default function RangeFilter({
 
   return (
     <div className="m-2 flex-grow">
-      <div className="fg-gray text-bold">{label}</div>
+      <div className="text-[var(--foreground)] text-bold">{label}</div>
 
       <Slider
         value={[loVal, hiVal]}
@@ -39,7 +39,7 @@ export default function RangeFilter({
         className="size-5"
       />
 
-      <div className="text-center fg-gray text-small">
+      <div className="text-center text-[var(--foreground)] text-small">
         {format(loVal)} — {format(hiVal)}
       </div>
     </div>

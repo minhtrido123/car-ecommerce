@@ -12,6 +12,7 @@ public class KafkaProducer : IKafkaProducer, IDisposable
     private readonly string _inventoryTopic;
     private readonly ILogger<KafkaProducer> _logger;
 
+
     public KafkaProducer(string brokers, string invalidationTopic, string inventoryTopic, ILogger<KafkaProducer> logger)
     {
         _invalidationTopic = invalidationTopic;

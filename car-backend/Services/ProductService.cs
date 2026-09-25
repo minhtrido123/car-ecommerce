@@ -24,10 +24,10 @@ public interface IProductService
 public class ProductService : IProductService
 {
     private readonly SorchaDbContext _db;
-    private readonly ICacheService _cache;
-    private readonly IKafkaProducer _kafkaProducer;
+    private readonly Lazy<ICacheService> _cache;
+    private readonly Lazy<IKafkaProducer> _kafkaProducer;
 
-    public ProductService(SorchaDbContext db, ICacheService cache, IKafkaProducer kafkaProducer)
+    public ProductService(SorchaDbContext db, Lazy<ICacheService> cache, Lazy<IKafkaProducer> kafkaProducer)
     {
         _db = db;
         _cache = cache;
@@ -37,9 +37,11 @@ public class ProductService : IProductService
     public async Task<PagedResult<ProductResponse>> GetCatalogAsync(string? type, Guid? categoryId, decimal? minPrice, decimal? maxPrice, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
         var cacheKey = $"products:list:{type}:{categoryId}:{minPrice}:{maxPrice}:{pageNumber}:{pageSize}";
-        var cached = await _cache.GetAsync<PagedResult<ProductResponse>>(cacheKey, cancellationToken);
-        if (cached is not null) return cached;
-
+        if (_cache.Value is not null)
+        {
+            var cached = await _cache.Value.GetAsync<PagedResult<ProductResponse>>(cacheKey, cancellationToken);
+            if (cached is not null) return cached;
+        }
         IQueryable<Product> query = (type?.ToUpperInvariant()) switch
         {
             "CAR" => _db.Cars.AsNoTracking()
@@ -65,16 +67,21 @@ public class ProductService : IProductService
 
         var result = new PagedResult<ProductResponse>(
             items.Select(ProductMapping.ToResponse).ToList(), totalCount, pageNumber, pageSize);
-        await _cache.SetAsync(cacheKey, result, cancellationToken: cancellationToken);
+        if (_cache.Value is not null)
+            await _cache.Value.SetAsync(cacheKey, result, cancellationToken: cancellationToken);
         return result;
     }
 
     public async Task<ProductDetailResponse?> GetDetailAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var cacheKey = $"product:{id}";
-        var cached = await _cache.GetAsync<ProductDetailResponse>(cacheKey, cancellationToken);
-        if (cached is not null) return cached;
-
+        // Check cache exists
+        try
+        {
+            var cached = await _cache.Value.GetAsync<ProductDetailResponse>(cacheKey, cancellationToken);
+            if (cached is not null) return cached;
+        }
+        catch { }
         var product = await _db.Products.AsNoTracking()
             .Include(p => p.Category)
             .Include(p => p.ProductImages)
@@ -96,7 +103,11 @@ public class ProductService : IProductService
         }
 
         var response = ProductMapping.ToDetail(product, car, part);
-        await _cache.SetAsync(cacheKey, response, cancellationToken: cancellationToken);
+        try
+        {
+            await _cache.Value.SetAsync(cacheKey, response, cancellationToken: cancellationToken);
+        }
+        catch { }
         return response;
     }
 
@@ -112,9 +123,12 @@ public class ProductService : IProductService
     public async Task<PagedResult<PartResponse>> GetPartsAsync(Guid? categoryId, decimal? minPrice, decimal? maxPrice, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
         var cacheKey = $"parts:list:{categoryId}:{minPrice}:{maxPrice}:{pageNumber}:{pageSize}";
-        var cached = await _cache.GetAsync<PagedResult<PartResponse>>(cacheKey, cancellationToken);
-        if (cached is not null) return cached;
-
+        try
+        {
+            var cached = await _cache.Value.GetAsync<PagedResult<PartResponse>>(cacheKey, cancellationToken);
+            if (cached is not null) return cached;
+        }
+        catch { }
         IQueryable<Part> query = _db.Parts.AsNoTracking()
             .Include(p => p.Category)
             .Include(p => p.ProductImages);
@@ -133,7 +147,11 @@ public class ProductService : IProductService
 
         var result = new PagedResult<PartResponse>(
             items.Select(ProductMapping.ToPartResponse).ToList(), totalCount, pageNumber, pageSize);
-        await _cache.SetAsync(cacheKey, result, cancellationToken: cancellationToken);
+        try
+        {
+            await _cache.Value.SetAsync(cacheKey, result, cancellationToken: cancellationToken);
+        }
+        catch { }
         return result;
     }
 
@@ -261,8 +279,12 @@ public class ProductService : IProductService
 
     private async Task InvalidateProductAsync(Guid id, string action, CancellationToken cancellationToken)
     {
-        await _kafkaProducer.PublishInvalidationAsync("Product", id, action, cancellationToken);
-        await _cache.DeleteAsync($"product:{id}", cancellationToken);
-        await _cache.DeleteByPatternAsync("products:list:*", cancellationToken);
+        try
+        {
+            await _kafkaProducer.Value.PublishInvalidationAsync("Product", id, action, cancellationToken);
+            await _cache.Value.DeleteAsync($"product:{id}", cancellationToken);
+            await _cache.Value.DeleteByPatternAsync("products:list:*", cancellationToken);
+        }
+        catch { }
     }
 }

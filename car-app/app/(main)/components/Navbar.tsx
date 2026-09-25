@@ -52,7 +52,15 @@ export default function Navbar() {
       data-expand-point="md"
     >
       <Link href="/" className="brand no-hover md:flex-1 justify-start">
-        <img src={"/logo.jpg"} className="w-[40px]!" />
+        <img
+          src="/logo.png"
+          className="w-[100px] dark:hidden"
+        />
+
+        <img
+          src="/logo-dark.png"
+          className="w-[100px] hidden dark:block"
+        />
       </Link>
 
       <ul className={`app-bar-menu relative gap-5 large ${style.appBarMenu}`}>
