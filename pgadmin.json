@@ -1,0 +1,13 @@
+{
+    "Servers": {
+        "1": {
+            "Name": "supra",
+            "Group": "supra",
+            "Host": "pg-1d026713-minhtridovn123-987e.k.aivencloud.com",
+            "Port": 14580,
+            "MaintenanceDB": "defaultdb",
+            "Username": "avnadmin",
+            "SSLMode": "require"
+        }
+    }
+}
